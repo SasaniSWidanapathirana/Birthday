@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Birthday Mission</title>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:black;
+color:white;
+overflow:hidden;
+}
+
+/* UI panels */
+
+#ui{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+text-align:center;
+pointer-events:none;
+}
+
+.panel{
+background:rgba(0,0,0,0.65);
+border:1px solid #4cc9ff;
+padding:50px 60px;
+border-radius:12px;
+backdrop-filter:blur(10px);
+pointer-events:auto;
+max-width:80%;
+}
+
+button{
+padding:12px 22px;
+margin:8px;
+border:none;
+border-radius:20px;
+background:#0077ff;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#3399ff;
+}
+
+.section{
+display:none;
+}
+
+.gallery img{
+width:200px;
+margin:10px;
+border-radius:10px;
+}
+
+/* puzzle */
+
+#puzzleBoard{
+display:grid;
+grid-template-columns:repeat(3,150px);
+gap:1px;
+justify-content:center;
+margin-top:20px;
+}
+
+.tile{
+width:150px;
+height:150px;
+background-size:450px 450px;
+cursor:grab;
+}
+
+h1{
+font-size:45px;
+text-shadow:0 0 15px #3cf;
+}
+
+/* mission cards */
+
+.mission-cards{
+display:grid;
+grid-template-columns:repeat(4, 1fr);
+gap:40px;
+margin-top:40px;
+max-width:1200px;
+}
+
+.mission-card{
+cursor:pointer;
+border-radius:10px;
+overflow:hidden;
+border:2px solid #4cc9ff;
+transition:all 0.3s ease;
+background:rgba(65, 105, 225, 0.3);
+}
+
+.mission-card:hover{
+transform:scale(1.05);
+box-shadow:0 0 20px #4cc9ff;
+}
+
+.mission-card img{
+width:100%;
+height:280px;
+object-fit:cover;
+display:block;
+}
+
+.mission-card-text{
+background:rgba(0,0,0,0.8);
+color:#4cc9ff;
+padding:25px;
+text-align:center;
+font-weight:bold;
+font-size:18px;
+}
+
+.gallery img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 10px;
+}
+
+#countdownScreen{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+#countNumber{
+  font-size:120px;
+  color:#4cc9ff;
+  text-shadow:0 0 40px #4cc9ff;
+  animation:zoom 1s ease infinite;
+}
+
+@keyframes zoom{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.3);}
+  100%{transform:scale(1);}
+}
+
+#ui{
+  display:flex;
+}
+
+
+@keyframes glow {
+  0% { box-shadow: 0 0 20px #7fdbff; }
+  50% { box-shadow: 0 0 35px #7fdbff; }
+  100% { box-shadow: 0 0 20px #7fdbff; }
+}
+
+
+</style>
+</head>
+
+<body>
+<!-- COUNTDOWN SCREEN -->
+<div id="countdownScreen" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+  <h1 id="countNumber">3</h1>
+  <button onclick="startPreCountdown()"  style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    🚀 Start
+  </button>
+</div>
+
+<div id="ui">
+
+<div id="intro" class="panel" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+
+<h1>🚀 Happy Birthday To You My Love 🚀</h1>
+
+<h3>Are you excited to go through this mission baby...</h3>
+
+<h4 style="color: #3cf;">Hi Birthday Boy 👨‍🚀</h4>
+
+<img src="https://drive.google.com/thumbnail?id=1s29SchzYFPaBBflrj--VtYe7xu8B9-80&sz=w500"  >
+<br>
+ <button onclick="goToMenu()"  style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">Start Mission</button>
+
+</div>
+
+
+<div id="menu" class="panel section" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+
+<h2>Mission Dashboard</h2>
+
+<div class="mission-cards">
+
+<div class="mission-card" onclick="openSection('letter')">
+<img src="letter.jpg" alt="Letter">
+<div class="mission-card-text">💌 Birthday Letter</div>
+</div>
+
+<div class="mission-card" onclick="openSection('puzzle')">
+<img src="puzzle.jpg" alt="Puzzle">
+<div class="mission-card-text">🧩 Photo Puzzle</div>
+</div>
+
+<div class="mission-card" onclick="openSection('gallery')">
+<img src="img.jpg" alt="Gallery">
+<div class="mission-card-text">📸 Photo Galaxy</div>
+</div>
+
+<div class="mission-card" onclick="openSection('gift')">
+<img src="gift.jpg" alt="Gift">
+<div class="mission-card-text">🎁 Surprise Gift</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div id="letter" class="panel section" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+  <h2 style="font-size:40px; color:#ffdd59; text-shadow:0 0 15px #ffdd59;">💌 Cosmic Birthday Letter 💌</h2>
+
+  <p style="font-size:18px; line-height:1.6; text-shadow: 0 0 5px #7fdbff;">
+    Happy Birthday, my shining star! 🌟<br>
+    2025 had its challenges, but together we turned every moment into light and love. <br>
+    As we blast into 2026, may your universe overflow with happiness, adventure, and dreams coming true. <br>
+    Thank you for being my guiding star, my love, and my constant inspiration. 💖
+  </p>
+
+  <p style="font-size:20px; margin-top:20px; color:#ff6b81; text-shadow:0 0 10px #ff6b81;">
+    ⭐ YOU ARE THE BRIGHTEST STAR ⭐
+  </p>
+
+  <button onclick="back()" style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    Back
+  </button>
+</div>
+
+
+
+<div id="puzzle" class="panel section" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+
+<h2>🧩 Photo Puzzle</h2>
+
+<div id="puzzleBoard"></div>
+
+<button onclick="back()"  style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">Back</button>
+
+</div>
+
+
+<div id="gift" class="panel section" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+
+<h2>🎁 Surprise Gift</h2>
+
+<button onclick="revealGift()">Reveal Gift</button>
+
+<p id="giftText"></p>
+
+<!-- VIDEO (hidden initially) -->
+<video id="giftVideo" width="400" controls style="display:none; margin-top:20px;">
+  <source src="birthday.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<button onclick="back()"  style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">Back</button>
+
+</div>
+
+
+<div id="gallery" class="panel section" style="
+    background: radial-gradient(ellipse at center, rgba(10,10,30,0.95) 0%, rgba(0,0,0,0.85) 100%);
+    border: 2px solid #7fdbff;
+    box-shadow: 0 0 30px #7fdbff;
+    color: #e0f7ff;
+    text-align: center;
+    animation: glow 2s infinite alternate;
+">
+
+<h2>📸 Photo Galaxy</h2>
+
+<div class="gallery">
+
+<img src="https://drive.google.com/thumbnail?id=1KUyTpGfYjyzAm9Jw7GAiBAZOu0bfdre5&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1bfoF-Qz3oyhDhnmMMoAUOMa0YlZOwAZO&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1Wc_1gwbuyjxXNypYCTEUruYPHDG7_x26&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1yVCFQVmtLyRqxPFT0KtX2HYgCfXSJygX&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=10UBC5RtOfuKv9MLKjBDawinwGdlg314I&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1YP-Lj4v82xawzH0AVfvXDgHEPzUGZIIu&sz=w500" alt="Gallery Photo">
+
+<img src="https://drive.google.com/thumbnail?id=14_EnPLZKp0JiLJnZx9r_VUiU4Xf1grGL&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1bo1-HuV6Fi3yJ_MgAfdGX3TYTM38uuOZ&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=18GuYyjMkn0kLJ5SfkHjdCaN3b6C6ODLc&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1cgh_lm7nXtMdOis8EscBKwBXrxjWk8MX&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1HaKAmsA_4duca10-KHWxHUijhkSC3mIk&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1RizGrChgTJm3be_sGSf6aX_xX6jZP1yn&sz=w500" alt="Gallery Photo">
+
+<img src="https://drive.google.com/thumbnail?id=13SgMnVbWyIpGiBqkbLNbdcUFCCZYRVRv&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1G3kFnJgTWiOfLFpqUrt89fvotwlpJv5Z&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=11RBI_KgObAkDoBmdSTs-WmgjS5QDY-EK&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1W4JSmOeFxh2SLW86KRWO6diJ7U42Yd7C&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=180VhIr7XeMEOUYBsAMyC9ldKS1ZxOAyX&sz=w500" alt="Gallery Photo">
+<img src="https://drive.google.com/thumbnail?id=1Y4sdEIsVcKck6HIVt53_RgVOJN3-zLY1&sz=w500" alt="Gallery Photo">
+
+
+
+
+
+
+
+
+</div>
+
+<button onclick="back()"  style="
+      margin-top:25px;
+      padding:12px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:15px;
+      background: #0077ff;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0077ff;
+      transition: all 0.3s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">Back</button>
+
+</div>
+
+</div>
+
+<audio id="countdownMusic">
+  <source src="countdown.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+function goToMenu(){
+  // Hide intro panel
+  document.getElementById("intro").style.display = "none";
+
+  // Show mission dashboard
+  document.getElementById("menu").style.display = "block";
+
+  // Stop happy birthday music
+  const birthdayMusic = document.getElementById("birthdaySong");
+  if(birthdayMusic){
+    birthdayMusic.pause();
+    birthdayMusic.currentTime = 0;
+  }
+}
+
+let count = 3;
+
+function startPreCountdown(){
+  const el = document.getElementById("countNumber");
+  const screen = document.getElementById("countdownScreen");
+  const countdownMusic = document.getElementById("countdownMusic");
+  const intro = document.getElementById("intro");
+  const birthdayMusic = document.getElementById("birthdaySong");
+
+  let count = 3;
+
+  // Hide countdown start button so it doesn’t stay on screen
+  screen.querySelector("button").style.display = "none";
+
+  // Show countdown screen
+  screen.style.display = "flex";
+
+  // Play countdown music
+  if(countdownMusic){
+    countdownMusic.currentTime = 0;
+    countdownMusic.play();
+  }
+
+  const interval = setInterval(() => {
+    el.innerHTML = count;
+    count--;
+
+    if(count < 0){
+      el.innerHTML = "🎉";
+
+      // Stop countdown music
+      if(countdownMusic){
+        countdownMusic.pause();
+        countdownMusic.currentTime = 0;
+      }
+
+      clearInterval(interval);
+
+      setTimeout(()=>{
+        // Hide countdown screen
+        screen.style.display = "none";
+
+        // Show intro panel
+        intro.style.display = "block";
+
+        // Play happy birthday music
+        if(birthdayMusic){
+          birthdayMusic.currentTime = 0;
+          birthdayMusic.play();
+        }
+
+      }, 1000);
+    }
+
+  }, 1000);
+}
+/* THREE JS SPACE */
+
+const scene=new THREE.Scene();
+
+const camera=new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+const renderer=new THREE.WebGLRenderer();
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+document.body.appendChild(renderer.domElement);
+
+/* stars */
+
+const starGeo=new THREE.BufferGeometry();
+const starCount=1500;
+const positions=[];
+
+for(let i=0;i<starCount;i++){
+positions.push(
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000
+);
+}
+
+starGeo.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(positions,3)
+);
+
+const stars=new THREE.Points(
+starGeo,
+new THREE.PointsMaterial({color:0xffffff})
+);
+
+scene.add(stars);
+
+/* earth */
+
+const texLoader=new THREE.TextureLoader();
+
+const earth=new THREE.Mesh(
+new THREE.SphereGeometry(3,32,32),
+new THREE.MeshBasicMaterial({
+map:texLoader.load("https://threejs.org/examples/textures/earth_atmos_2048.jpg")
+})
+);
+
+earth.position.set(-10,0,-20);
+scene.add(earth);
+
+/* saturn */
+
+const saturn=new THREE.Mesh(
+new THREE.SphereGeometry(2.5,32,32),
+new THREE.MeshBasicMaterial({
+map:texLoader.load("https://threejs.org/examples/textures/planets/saturn.jpg")
+})
+);
+
+saturn.position.set(12,3,-25);
+scene.add(saturn);
+
+/* rings */
+
+const ring=new THREE.Mesh(
+new THREE.RingGeometry(3,4,32),
+new THREE.MeshBasicMaterial({
+map:texLoader.load("https://threejs.org/examples/textures/planets/saturnringcolor.jpg"),
+side:THREE.DoubleSide,
+transparent:true
+})
+);
+
+ring.rotation.x=1.5;
+saturn.add(ring);
+
+/* spaceships */
+
+let spaceships=[];
+
+const spaceshipTexture=texLoader.load("spaceship.png");
+
+for(let i=0;i<5;i++){
+
+let ship=new THREE.Mesh(
+new THREE.PlaneGeometry(1, 1.5),
+new THREE.MeshBasicMaterial({map:spaceshipTexture, transparent:true})
+);
+
+ship.position.set(
+Math.random()*100-50,
+Math.random()*100-50,
+Math.random()*-100-10
+);
+
+ship.velocity={
+x:(Math.random()-0.5)*0.3,
+y:(Math.random()-0.5)*0.3,
+z:Math.random()*0.2+0.1
+};
+
+ship.rotation.x=Math.random()*Math.PI;
+ship.rotation.y=Math.random()*Math.PI;
+
+scene.add(ship);
+spaceships.push(ship);
+
+}
+
+/* no meteors - stars will move instead */
+
+/* animation */
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+earth.rotation.y+=0.002;
+saturn.rotation.y+=0.003;
+
+stars.rotation.x+=0.0001;
+stars.rotation.y+=0.0002;
+
+spaceships.forEach(ship=>{
+ship.position.x+=ship.velocity.x;
+ship.position.y+=ship.velocity.y;
+ship.position.z+=ship.velocity.z;
+
+if(ship.position.x>60) ship.position.x=-60;
+if(ship.position.x<-60) ship.position.x=60;
+if(ship.position.y>60) ship.position.y=-60;
+if(ship.position.y<-60) ship.position.y=60;
+if(ship.position.z>50) ship.position.z=-100;
+
+ship.lookAt(camera.position);
+});
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+/* UI */
+
+// function startMission(){
+
+// document.getElementById("intro").style.display="none";
+// document.getElementById("menu").style.display="block";
+
+// document.getElementById("music").play();
+
+// }
+function startMission(){
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("countdownScreen").style.display = "flex";
+  startPreCountdown(); // start countdown after button click
+}
+/* navigation */
+
+function openSection(id){
+
+document.querySelectorAll(".section")
+.forEach(s=>s.style.display="none");
+
+document.getElementById("menu").style.display="none";
+document.getElementById(id).style.display="block";
+
+}
+
+// function back(){
+
+// document.querySelectorAll(".section")
+// .forEach(s=>s.style.display="none");
+
+// document.getElementById("menu").style.display="block";
+
+// }
+
+function back(){
+
+document.querySelectorAll(".section")
+.forEach(s=>s.style.display="none");
+
+document.getElementById("menu").style.display="block";
+
+// stop video if playing
+let video = document.getElementById("giftVideo");
+if(video){
+    video.pause();
+    video.currentTime = 0;
+    video.style.display = "none";
+}
+
+}
+
+/* gift */
+
+function revealGift(){
+
+document.getElementById("giftText").innerHTML =
+"🎉 Your surprise video is here! 💖";
+
+let video = document.getElementById("giftVideo");
+video.style.display = "block";
+video.play();
+
+}
+
+/* puzzle */
+
+const puzzleBoard=document.getElementById("puzzleBoard");
+
+let pieces=[];
+
+for(let i=0;i<9;i++){
+
+let tile=document.createElement("div");
+
+tile.className="tile";
+
+tile.style.backgroundImage="url(ourphoto.jpeg)";
+
+tile.style.backgroundPosition=
+-(i%3)*150+"px "+-Math.floor(i/3)*150+"px";
+
+tile.draggable=true;
+
+tile.addEventListener("dragstart",dragStart);
+tile.addEventListener("dragover",dragOver);
+tile.addEventListener("drop",drop);
+
+puzzleBoard.appendChild(tile);
+
+pieces.push(tile);
+
+}
+
+/* shuffle puzzle */
+
+function shufflePuzzle(){
+let positions=[];
+for(let i=0;i<9;i++){
+positions.push(i);
+}
+
+for(let i=positions.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1));
+[positions[i],positions[j]]=[positions[j],positions[i]];
+}
+
+pieces.forEach((tile,index)=>{
+let pos=positions[index];
+tile.style.backgroundPosition=-(pos%3)*150+"px "+-Math.floor(pos/3)*150+"px";
+});
+}
+
+shufflePuzzle();
+
+function dragStart(){
+dragged=this;
+}
+
+function dragOver(e){
+e.preventDefault();
+}
+
+function drop(){
+let temp=this.style.backgroundPosition;
+this.style.backgroundPosition=dragged.style.backgroundPosition;
+dragged.style.backgroundPosition=temp;
+
+checkPuzzleSolved();
+}
+
+function checkPuzzleSolved(){
+let solved=true;
+for(let i=0;i<pieces.length;i++){
+let correctPos=-(i%3)*150+"px "+-Math.floor(i/3)*150+"px";
+if(pieces[i].style.backgroundPosition!==correctPos){
+solved=false;
+break;
+}
+}
+
+if(solved){
+showSuccessMessage();
+}
+}
+
+function showSuccessMessage(){
+alert("🎉 Congratulations! You solved the puzzle! 🎉");
+}
+// start countdown immediately when page loads
+    window.onload = startCountdown;
+</script>
+
+<audio id="countdownMusic">
+  <source src="countdown.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="birthdaySong">
+  <source src="happybirthday.mp3" type="audio/mpeg">
+</audio>
+
+</body>
+</html>
